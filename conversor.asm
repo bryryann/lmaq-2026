@@ -14,8 +14,19 @@ ORG 0000H
 
 INICIO:
     ; Inicializar pilha
+    LXI SP, 27FFH
 
     ; Limpar registradores e variáveis
+    MVI A, 00H
+    MVI B, 00H
+    MVI C, 00H
+    MVI D, 00H
+    MVI E, 00H
+    MVI H, 00H
+    MVI L, 00H
+
+    STA VALOR_BIN
+    STA ERRO_FLAG
 
     ; Carregar número decimal de entrada
 
