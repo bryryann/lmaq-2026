@@ -5,7 +5,7 @@
 ; ----------------------------------------------
 
 ; MAPA DE MEMÓRIA
-IN_DECIMAL  EQU 2000H ; Decimal ASCII (3 caracteres + terminador)
+IN_DECIMAL  EQU 2000H ; Decimal ASCII (3 caracteres)
 OUT_BIN     EQU 2300H ; Binário ASCII (8 caracteres)
 VALOR_BIN   EQU 2400H ; Valor numérico intermediário (1 byte)
 ERRO_FLAG   EQU 2501H ; Indicador de erro (1 byte)
@@ -78,19 +78,103 @@ INICIO:
     JNC ERRO_ENTRADA
 
 ENTRADA_VALIDA:
+    CALL DEC_PARA_BIN
 
-    ; ----- Chamar rotina decimal para binário
-
-    ; ----- Armazenar resultado na memória
-
-    ; ----- Realizar verificação (se necessário)
+    CALL VERIFICA_BIN
 
     ; ----- Fim programa
     HLT
 
-; ROTINAS DO CONVERSOR
+VERIFICA_BIN:
+    MVI B, 00H
+    LXI H, OUT_BIN
+    MVI C, 08H
+
+VERIFICA:
+    MOV A, B
+    RLC
+    MOV B, A
+
+    MOV A, M
+    CPI 31H
+    JNZ PROXIMO
+    INR B
+
+PROXIMO:
+    INX H
+    DCR C
+    JNZ VERIFICA
+
+    LDA VALOR_BIN
+    CMP B
+    JNZ FALHA
+
+    RET
+
 DEC_PARA_BIN:
-    ; Implementar posteriormente
+    ; Converter ASCII para numero decimal
+    MOV A, B
+    SUI 30H
+    MOV B, A
+
+    MOV A, C
+    SUI 30H
+    MOV C, A
+
+    ; Limpar acumulador
+    MVI E, 00H
+
+    ; Somar centenas
+CENTENAS:
+    MOV A, B
+    ORA A
+    JZ DEZENAS
+
+    MOV A, E
+    ADI 64H
+    MOV E, A
+    DCR B
+    JMP CENTENAS
+
+    ; Somar dezenas
+DEZENAS:
+    MOV A, C
+    ORA A
+    JZ UNIDADES
+
+    MOV A, E
+    ADI 0AH
+    MOV E, A
+    DCR C
+    JMP DEZENAS
+
+    ; Somar unidades
+UNIDADES:
+    MOV A, D
+    SUI 30H
+    ADD E
+    STA VALOR_BIN
+
+    ; Converter para binario ASCII
+    MOV B, A
+    LXI H, OUT_BIN
+    MVI C, 08H
+
+BINARIO:
+    MOV A, B
+    RLC
+    MOV B, A
+
+    MVI A, 30H
+    JNC GRAVA
+    INR A
+
+GRAVA:
+    MOV M, A
+    INX H
+    DCR C
+    JNZ BINARIO
+
     RET
 
 ; TRATAMENTO DE ERRO
@@ -101,6 +185,6 @@ ERRO_ENTRADA:
 
 ; FALHA NA VERIFICACAO
 FALHA:
-    ; Registrar falha
+    MVI A, 02H
+    STA ERRO_FLAG
     HLT
-
