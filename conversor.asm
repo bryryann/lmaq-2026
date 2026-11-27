@@ -155,7 +155,7 @@ UNIDADES:
     ADD E
     STA VALOR_BIN
 
-    ; Converter para binario ASCII
+    ; Converter para binario
     MOV B, A
     LXI H, OUT_BIN
     MVI C, 08H
@@ -165,7 +165,7 @@ BINARIO:
     RLC
     MOV B, A
 
-    MVI A, 30H
+    MVI A, 00H
     JNC GRAVA
     INR A
 
@@ -174,8 +174,6 @@ GRAVA:
     INX H
     DCR C
     JNZ BINARIO
-
-    RET
 
 ; TRATAMENTO DE ERRO
 ERRO_ENTRADA:
